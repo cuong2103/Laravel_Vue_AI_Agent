@@ -1,0 +1,50 @@
+---
+description: Database rules using Eloquent and MySQL. Apply when writing migrations, queries, or repositories.
+globs: ["app/Models/**/*.php", "app/Repositories/**/*.php", "database/**/*.php"]
+alwaysApply: false
+---
+
+# Database Rules — Eloquent + MySQL
+
+## Key Rules
+- Never write raw SQL in business logic — use Eloquent or Query Builder
+- Prevent N+1 with eager loading: `Model::with(['relation'])->get()`
+- Use `$fillable` on all models for mass assignment protection
+- Use `DB::transaction()` for multi-step atomic operations
+- Always pagination for lists: `->paginate(20)`
+
+## Eloquent Patterns
+```php
+// ✅ Select only needed fields
+User::select('id', 'email', 'name')->find($id);
+
+// ✅ Eager loading (avoid N+1)
+Order::with(['user', 'items.product'])->paginate(20);
+
+// ✅ Transaction
+DB::transaction(function () use ($data) {
+    $order = Order::create($data);
+    Product::where('id', $data['product_id'])->decrement('stock');
+});
+```
+
+## Migration Conventions
+```php
+Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->decimal('total', 10, 2);
+    $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
+    $table->softDeletes();
+    $table->timestamps();
+    $table->index(['user_id', 'created_at']);
+});
+```
+
+## Commands
+```bash
+php artisan make:migration create_orders_table
+php artisan migrate
+php artisan migrate:rollback
+php artisan migrate:fresh --seed
+```

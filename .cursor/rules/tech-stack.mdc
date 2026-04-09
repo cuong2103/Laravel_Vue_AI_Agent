@@ -1,0 +1,28 @@
+---
+description: Tech stack and approved technologies for Laravel + Vue 3 projects. Apply when choosing libraries, frameworks, or proposing new dependencies.
+alwaysApply: false
+---
+
+# Tech Stack — Approved Technologies
+
+| Layer | Choice | Avoid |
+|-------|--------|-------|
+| **Backend** | Laravel 12 + PHP 8.3 | Raw PHP, Symfony (unless needed) |
+| **Frontend** | Vue 3 + Inertia.js + TypeScript | React, Angular |
+| **UI Components** | Reka UI (shadcn-vue) | Bootstrap |
+| **Styling** | Tailwind CSS v4 | Styled-components |
+| **State** | Pinia | Vuex |
+| **Database** | MySQL 8 + Eloquent | SQLite (prod), raw PDO |
+| **Cache** | Redis (Laravel Cache) | Memcached |
+| **Queue** | Laravel Queue (Redis driver) | BullMQ (Node-only) |
+| **Auth** | Laravel Sanctum + Fortify | Manual JWT |
+| **Email** | Resend / SMTP via Laravel Mail | — |
+| **Search** | MySQL FULLTEXT → Meilisearch | Elasticsearch |
+| **Testing** | PHPUnit + Pest + Playwright | Codeception |
+| **CI/CD** | GitHub Actions | Jenkins |
+| **Monitoring** | Laravel Telescope (dev) + Sentry (prod) | — |
+| **Logging** | Laravel Log (Monolog) | error_log() |
+| **Code Style** | Laravel Pint (PHP) + Prettier (JS) | — |
+
+## When to change stack
+Before adopting a new library: `composer audit`, check PHP 8.3 compatibility, check Laravel DI support, verify MIT/Apache license.

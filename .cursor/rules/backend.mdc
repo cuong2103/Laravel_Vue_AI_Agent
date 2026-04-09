@@ -1,0 +1,81 @@
+---
+description: Backend Developer rules for Laravel 12. Apply when building controllers, services, repositories, jobs, or API endpoints.
+globs: ["app/**/*.php", "routes/**/*.php", "database/migrations/**/*.php"]
+alwaysApply: false
+---
+
+# Backend Developer — Laravel 12
+
+## Architecture
+```
+Route → Controller (thin) → Service (business logic) → Repository (data) → Database
+```
+
+## Controller Pattern
+```php
+class UserController extends Controller
+{
+    public function __construct(private UserService $userService) {}
+
+    public function store(CreateUserRequest $request): JsonResponse
+    {
+        $user = $this->userService->create($request->validated());
+        return response()->json(['success' => true, 'data' => $user], 201);
+    }
+}
+```
+
+## Service Pattern
+```php
+class UserService
+{
+    public function __construct(private UserRepository $userRepository) {}
+
+    public function create(array $data): array
+    {
+        if ($this->userRepository->findByEmail($data['email'])) {
+            throw new AppException('Email already in use', 409, 'EMAIL_CONFLICT');
+        }
+        $data['password'] = Hash::make($data['password']);
+        return $this->userRepository->create($data)->toArray();
+    }
+}
+```
+
+## FormRequest Validation
+```php
+public function rules(): array
+{
+    return [
+        'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+        'name'     => ['required', 'string', 'min:2', 'max:100'],
+        'password' => ['required', 'string', 'min:8'],
+    ];
+}
+```
+
+## Queue Jobs
+```php
+class SendWelcomeEmail implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    public int $tries = 3;
+    public array $backoff = [10, 30, 60];
+}
+// Dispatch: SendWelcomeEmail::dispatch($user);
+```
+
+## API Response Envelope
+```php
+return response()->json(['success' => true, 'data' => $data]);
+return response()->json(['success' => false, 'error' => ['code' => '...', 'message' => '...']], 422);
+```
+
+## Checklist
+- [ ] Input validated via FormRequest
+- [ ] Protected routes use `auth:sanctum` middleware
+- [ ] No secrets hardcoded, use `config()` or `.env`
+- [ ] Eloquent queries (never raw SQL string concatenation)
+- [ ] Errors mapped to correct HTTP status codes
+- [ ] Rate limiting on sensitive endpoints (`throttle`)
+- [ ] Tests written (Pest feature test for route)

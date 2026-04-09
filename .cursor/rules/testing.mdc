@@ -1,0 +1,47 @@
+---
+description: Testing standards for PHPUnit/Pest and Playwright. Apply when writing or reviewing tests.
+globs: ["tests/**/*.php", "tests/**/*.spec.ts", "tests/**/*.test.ts"]
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Rules
+- Unit test coverage: minimum 80% (Services, Repositories)
+- All features must have tests before merge
+- Bug fixes must have regression tests
+- Use Pest for PHP, Playwright for E2E
+
+## Pest Unit Test
+```php
+describe('UserService', function () {
+    it('throws exception when user not found', function () {
+        $repo = Mockery::mock(UserRepository::class);
+        $repo->shouldReceive('findById')->andReturn(null);
+        $service = new UserService($repo);
+
+        expect(fn () => $service->findById(999))
+            ->toThrow(AppException::class, 'User not found');
+    });
+});
+```
+
+## Pest Feature (HTTP) Test
+```php
+it('creates user with valid data', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/v1/users', ['name' => 'John', 'email' => 'j@test.com', 'password' => 'secret123'])
+        ->assertCreated()
+        ->assertJsonPath('data.email', 'j@test.com');
+});
+```
+
+## Commands
+```bash
+php artisan test                    # All tests
+php artisan test --coverage --min=80
+./vendor/bin/pest --parallel
+npx playwright test
+```

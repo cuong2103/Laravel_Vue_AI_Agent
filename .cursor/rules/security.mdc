@@ -1,0 +1,38 @@
+---
+description: Security rules for Laravel. CRITICAL — never violate. Apply to all files.
+alwaysApply: true
+---
+
+# Security Rules — CRITICAL
+
+## Never Violate
+- Never hardcode secrets — use `.env` / `config()`
+- Never commit `.env` to version control
+- Never log passwords, tokens, or PII
+- Always validate via FormRequest before processing
+- Always use `$fillable` on models (mass assignment protection)
+
+## Key Patterns
+```php
+// Use Policies for authorization
+$this->authorize('delete', $post);
+
+// Rate limit auth endpoints
+Route::middleware(['throttle:5,1'])->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+// Protect routes with Sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('orders', OrderController::class);
+});
+
+// Hash passwords (use 'hashed' cast, don't manual hash)
+protected $casts = ['password' => 'hashed'];
+```
+
+## Dependency Audit
+```bash
+composer audit    # Check PHP packages
+npm audit         # Check JS packages
+```

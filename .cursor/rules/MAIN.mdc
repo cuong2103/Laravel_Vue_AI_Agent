@@ -1,0 +1,44 @@
+---
+description: Laravel + Vue 3 AI Agent System — Main entry point. Always apply this rule.
+alwaysApply: true
+---
+
+# AI Agent System — Laravel Base
+
+This project uses **Laravel 12 + Vue 3 + Inertia.js**. All code must follow the rules defined below.
+
+## Tech Stack
+- **Backend**: PHP 8.3 + Laravel 12
+- **Frontend**: Vue 3 + Inertia.js + TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database**: MySQL 8 + Eloquent ORM
+- **Cache/Queue**: Redis (Laravel Cache + Laravel Queue)
+- **Auth**: Laravel Sanctum + Fortify
+- **Testing**: PHPUnit + Pest + Playwright
+
+## Architecture — Layered
+```
+Route → Controller → Service → Repository → Database
+                  ↓
+              Middleware (auth, FormRequest validation, throttle)
+```
+
+## Active Rules (always enforce)
+- `backend.mdc` — Controller/Service/Repository pattern, Laravel idioms
+- `frontend.mdc` — Vue 3 Composition API, Inertia pages, Pinia
+- `tech-stack.mdc` — Approved technologies
+- `database.mdc` — Eloquent patterns, migrations, transactions
+- `security.mdc` — FormRequest, Sanctum, Policies, rate limiting
+- `api-conventions.mdc` — REST conventions, response envelope
+- `testing.mdc` — PHPUnit/Pest/Playwright standards
+
+## Available Agents
+| Agent | Task |
+|-------|------|
+| 🔧 Backend | APIs, services, Eloquent, jobs |
+| 🖥️ Frontend | Vue 3 components, Inertia pages, Pinia |
+| ✅ QA | Pest/Playwright tests, bug reports |
+| 🏗️ Architect | System design, ADRs, scalability |
+| 📋 PM | User stories, sprint planning |
+| 🎨 UI/UX | Vue/Tailwind design system |
+| ✍️ Copywriter | Page copy, SEO, microcopy |

@@ -1,0 +1,72 @@
+---
+description: Frontend Developer rules for Vue 3 + Inertia.js. Apply when building Vue components, Inertia pages, Pinia stores, or composables.
+globs: ["resources/js/**/*.vue", "resources/js/**/*.ts"]
+alwaysApply: false
+---
+
+# Frontend Developer — Vue 3 + Inertia.js
+
+## Component Structure
+```vue
+<script setup lang="ts">
+interface Props { label: string; variant?: 'primary' | 'secondary'; }
+const props = withDefaults(defineProps<Props>(), { variant: 'primary' });
+const emit = defineEmits<{ click: [] }>();
+</script>
+
+<template>
+  <button :class="['btn', `btn-${props.variant}`]" @click="emit('click')">
+    {{ props.label }}
+  </button>
+</template>
+```
+
+## Inertia Page (receives props from Laravel controller)
+```vue
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+
+defineProps<{ users: { id: number; name: string }[] }>();
+defineOptions({ layout: AppLayout });
+</script>
+
+<template>
+  <Head title="Users" />
+  <ul><li v-for="user in users" :key="user.id">{{ user.name }}</li></ul>
+</template>
+```
+
+## Inertia Form
+```vue
+<script setup lang="ts">
+import { useForm } from '@inertiajs/vue3';
+const form = useForm({ email: '', password: '' });
+const submit = () => form.post(route('login'));
+</script>
+<template>
+  <form @submit.prevent="submit">
+    <input v-model="form.email" type="email" />
+    <p v-if="form.errors.email">{{ form.errors.email }}</p>
+    <button :disabled="form.processing">Login</button>
+  </form>
+</template>
+```
+
+## Pinia Store
+```ts
+export const useCartStore = defineStore('cart', () => {
+  const items = ref<CartItem[]>([]);
+  const total = computed(() => items.value.reduce((s, i) => s + i.price * i.qty, 0));
+  const addItem = (item: CartItem) => items.value.push(item);
+  return { items, total, addItem };
+});
+```
+
+## Rules
+- Always use `<script setup lang="ts">`
+- Never use `any` type without justification
+- Prefer `defineProps<T>()` over `defineProps({})`
+- Inertia pages receive props from controller — no separate API calls needed
+- Use `defineAsyncComponent()` for heavy components
+- Every interactive element must be keyboard accessible

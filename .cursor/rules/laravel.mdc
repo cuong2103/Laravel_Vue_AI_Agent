@@ -1,0 +1,96 @@
+---
+description: Laravel-specific coding rules. ALWAYS apply for any PHP/backend task.
+globs: ["app/**/*.php", "routes/**/*.php"]
+alwaysApply: true
+---
+
+# Laravel Rules — Always Apply
+
+## Architecture
+```
+Route → Controller (THIN) → Service (logic) → Repository (data) → DB
+                          ↓
+                    FormRequest (validate) + API Resource (transform)
+```
+
+## ✅ Thin Controller
+```php
+class UserController extends Controller
+{
+    public function __construct(private UserService $userService) {}
+
+    public function store(CreateUserRequest $request): JsonResponse
+    {
+        $user = $this->userService->create($request->validated());
+        return new UserResource($user);
+    }
+}
+// ❌ No business logic, no Eloquent, no validation in controllers!
+```
+
+## ✅ Service (business logic)
+```php
+class UserService
+{
+    public function __construct(private UserRepository $userRepository) {}
+
+    public function create(array $data): User
+    {
+        if ($this->userRepository->findByEmail($data['email'])) {
+            throw new AppException('Email already in use', 409, 'EMAIL_CONFLICT');
+        }
+        $data['password'] = Hash::make($data['password']);
+        return $this->userRepository->create($data);
+    }
+}
+```
+
+## ✅ FormRequest (always, never $request->validate())
+```php
+class CreateUserRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+    public function rules(): array
+    {
+        return [
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'name'     => ['required', 'string', 'min:2', 'max:100'],
+            'password' => ['required', 'string', 'min:8'],
+        ];
+    }
+}
+```
+
+## ✅ Eloquent ORM (never raw SQL concatenation)
+```php
+User::where('is_active', true)->orderByDesc('created_at')->paginate(20);
+Order::with(['user', 'items.product'])->findOrFail($id);
+```
+
+## ✅ API Resource (always transform responses)
+```php
+class UserResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return ['id' => $this->id, 'name' => $this->name, 'email' => $this->email];
+    }
+}
+// return new UserResource($user);
+// return UserResource::collection($users);
+```
+
+## ✅ Model Must Have
+```php
+protected $fillable = ['name', 'email', 'password'];  // mass assignment
+protected $hidden   = ['password', 'remember_token'];
+protected $casts    = ['password' => 'hashed', 'email_verified_at' => 'datetime'];
+```
+
+## Checklist
+- [ ] Controller delegating to Service (thin)
+- [ ] FormRequest for validation
+- [ ] API Resource for response
+- [ ] Eloquent model has `$fillable`
+- [ ] Business logic ONLY in Service
+- [ ] `auth:sanctum` on protected routes
